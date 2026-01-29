@@ -1049,22 +1049,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 
 [[package]]
-name = "textures-converter-as-python-library"
-version = "0.1.0"
-dependencies = [
- "byteorder",
- "bytes",
- "chrono",
- "ddsfile",
- "image",
- "intel_tex_2",
- "pyo3",
- "serde",
- "serde_derive",
- "serde_json",
-]
-
-[[package]]
 name = "thiserror"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1157,6 +1141,22 @@ name = "version-compare"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "852e951cb7832cb45cb1169900d19760cfa39b82bc0ea9c0e5a14ae88411c98b"
+
+[[package]]
+name = "voyage_texture_converter"
+version = "0.1.0"
+dependencies = [
+ "byteorder",
+ "bytes",
+ "chrono",
+ "ddsfile",
+ "image",
+ "intel_tex_2",
+ "pyo3",
+ "serde",
+ "serde_derive",
+ "serde_json",
+]
 
 [[package]]
 name = "wasi"
