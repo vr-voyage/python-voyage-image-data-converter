@@ -3,6 +3,7 @@ use pyo3::prelude::*;
 use ddsfile::{AlphaMode, Caps2, D3D10ResourceDimension, Dds, DxgiFormat, NewDxgiParams};
 use intel_tex_2::bc5;
 use intel_tex_2::bc7;
+use intel_tex_2::bc3;
 use std::fmt;
 use std::io::Cursor;
 
@@ -13,6 +14,21 @@ pub enum CompressionFormat
     Rgba8Unorm,
     Dxt5,
     Bc7
+}
+
+struct MyDxgiFormat(DxgiFormat);
+
+impl MyDxgiFormat {
+    fn to_string(&self) -> String {
+        match self.0 {
+            DxgiFormat::BC7_Typeless => "BC7_Typeless".to_string(),
+            DxgiFormat::BC7_UNorm => "BC7_UNorm".to_string(),
+            DxgiFormat::BC7_UNorm_sRGB => "BC7_UNorm_sRGB".to_string(),
+            DxgiFormat::BC3_Typeless => "BC3_Typeless".to_string(),
+            DxgiFormat::BC3_UNorm_sRGB => "BC3_UNorm_sRGB".to_string(),
+            _ => "Unknown format".to_string()
+        }
+    }
 }
 
 impl fmt::Display for CompressionFormat {
@@ -52,7 +68,7 @@ fn convert_image_as(width: u32, height: u32, rgba8_content: &[u8], format: DxgiF
         height,
         width,
         depth: Some(1),
-        format: format, //  DxgiFormat::BC7_UNorm,
+        format: format,
         mipmap_levels: Some(1),
         array_layers: Some(1),
         caps2: Some(Caps2::empty()),
@@ -62,7 +78,7 @@ fn convert_image_as(width: u32, height: u32, rgba8_content: &[u8], format: DxgiF
     };
     // BC7
     let mut dds = Dds::new_dxgi(NewDxgiParams {
-        format: format,  // DxgiFormat::BC7_UNorm,
+        format: format,
         ..dds_defaults
     })
     .unwrap();
@@ -72,9 +88,8 @@ fn convert_image_as(width: u32, height: u32, rgba8_content: &[u8], format: DxgiF
         stride: width * 4,
         data: rgba8_content,
     };
+    println!("Compressing to {}...", MyDxgiFormat(format).to_string());
     surface_handler(&surface, dds.get_mut_data(0 /* layer */).unwrap());
-    println!("Compressing to BC7...");
-    
     println!("  Done!");
 
     //dds.write(&mut OpenOptions::new().write(true).create(true).open("a.dds").unwrap());
@@ -95,16 +110,20 @@ fn surface_treatment_none(_surface: &intel_tex_2::RgbaSurface, _blocks: &mut [u8
 
 fn surface_treatment_dxt5(surface: &intel_tex_2::RgbaSurface, blocks: &mut [u8])
 {
-    bc5::compress_blocks_into(surface, blocks);
+    println!("BC3 Compression...");
+    bc3::compress_blocks_into(surface, blocks);
+    println!("Compression Done !");
 }
 
 fn surface_treatment_bc7(surface: &intel_tex_2::RgbaSurface, blocks: &mut [u8])
 {
+    println!("BC7 Compression...");
     bc7::compress_blocks_into(
         &bc7::alpha_ultra_fast_settings(),
         &surface,
         blocks // dds.get_mut_data(0 /* layer */).unwrap(),
     );
+    println!("Compression Done !");
 }
 
 fn surface_handler_for(compression_format:&CompressionFormat) -> SurfaceHandler
